@@ -11,7 +11,7 @@ import javax.validation.Valid;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping(value = "/members", method = {RequestMethod.GET, RequestMethod.POST})
+@RequestMapping(value = "/members")
 public class MemberController {
 
     private final MemberRepository memberRepository;
@@ -21,7 +21,7 @@ public class MemberController {
         return "members/addMemberForm";
     }
 
-    @PostMapping("/save")
+    @PostMapping("/add")
     public String save(@Valid @ModelAttribute Member member, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "members/addMemberForm";
