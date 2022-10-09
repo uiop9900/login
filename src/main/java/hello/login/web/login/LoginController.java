@@ -12,6 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -69,7 +70,7 @@ public class LoginController {
         return "redirect:/";
     }
 
-    @PostMapping("/login")
+    //@PostMapping("/login")
     public String loginV3(@Valid @ModelAttribute LoginForm form, BindingResult bindingResult, HttpServletRequest request) {
         if(bindingResult.hasErrors()) {
             return "login/loginForm";
@@ -89,6 +90,34 @@ public class LoginController {
         session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
         return "redirect:/";
     }
+
+    /**
+     * 필터 적용후, 로그인 시 원래 있던 페이지로 다시 넘어간다.
+     */
+    @PostMapping("/login")
+    public String loginV4(@Valid @ModelAttribute LoginForm form,
+                          BindingResult bindingResult,
+                          @RequestParam(defaultValue = "/") String redirectURI,
+                          HttpServletRequest request) {
+        if(bindingResult.hasErrors()) {
+            return "login/loginForm";
+        }
+
+        Member loginMember = loginService.login(form.getLoginId(), form.getPassword());
+
+        if (loginMember == null) {
+            bindingResult.reject("loginFail", "아이디 혹은 비밀번호가 일치하지 않습니다.");
+            return "login/loginForm";
+        }
+
+        //로그인 성공 처리
+        HttpSession session = request.getSession(); // 안에 false를 넣어주면 세션이 없는 경우, 새롭게 생성하지 않고 null을 반환한다.
+        // 세션이 있으면 담고, 없으면 생성해서 넣어준다.
+        // 세션에 로그인 회원정보를 보관해둔다.
+        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
+        return "redirect:" + redirectURI;
+    }
+
 
     //@PostMapping("/logout")
     public String logout(HttpServletResponse response) {
